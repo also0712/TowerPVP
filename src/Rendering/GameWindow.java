@@ -1,6 +1,13 @@
-// Source - https://stackoverflow.com/a/1963684
-// Posted by Ivo Wetzel, modified by community. See post 'Timeline' for change history
-// Retrieved 2026-02-22, License - CC BY-SA 2.5
+// inspiré de  - https://stackoverflow.com/a/1963684
+// on sépare la couche gameLogic du rendering
+// la gameloop et le render sont appelés ici
+
+
+package Rendering;
+
+import Game.Common.GameConfig;
+import Game.Object.GameLogic;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,11 +23,14 @@ public class GameWindow extends JFrame implements Runnable {
     private BufferedImage background;
     private Graphics2D backgroundGraphics;
     private Graphics2D graphics;
-    private Thread threadGame;
+    private GameRenderer currentRenderer;
     private int width = 1280;
     private int height = 768;
     private int scale = 1;
-    private long delayBeetwinFramesMs = (1 / 60) * 1000; //60fps
+
+
+    private GameLogic logic ;
+
     private GraphicsConfiguration config =
             GraphicsEnvironment.getLocalGraphicsEnvironment()
                     .getDefaultScreenDevice()
@@ -36,6 +46,9 @@ public class GameWindow extends JFrame implements Runnable {
 
     // Setup
     public GameWindow() {
+        // définition du renderer (2D ou Isometric)
+        currentRenderer = new Renderer2D();
+
         // JFrame initialisation
         setTitle("Towers PvP");
         addWindowListener(new FrameClose());
@@ -43,6 +56,7 @@ public class GameWindow extends JFrame implements Runnable {
         setSize(width * scale, height * scale);
         setResizable(false);
         setVisible(true);
+
 
         // Canvas
         canvas = new Canvas(config);
@@ -59,6 +73,8 @@ public class GameWindow extends JFrame implements Runnable {
         System.out.println("Le jeu est initialisé !");
         Thread threadGame = new Thread(this);
         threadGame.start();
+
+        logic = new GameLogic();
 
     }
 
@@ -106,7 +122,7 @@ public class GameWindow extends JFrame implements Runnable {
             long renderStart = System.nanoTime();
 
             // Update game logic
-            updateGame();
+            logic.update();
 
             // Update Graphics
             do {
@@ -128,7 +144,7 @@ public class GameWindow extends JFrame implements Runnable {
             // Better do some FPS limiting here
             long renderTimeMs = (System.nanoTime() - renderStart) / 1000000;
             try {
-                Thread.sleep(Math.max(0, delayBeetwinFramesMs - renderTimeMs));
+                Thread.sleep(Math.max(0, GameConfig.DELAY_BETWEEN_FRAMES - renderTimeMs));
             } catch (InterruptedException e) {
                 Thread.interrupted();
                 break;
@@ -144,8 +160,12 @@ public class GameWindow extends JFrame implements Runnable {
         System.out.println("Le jeu tourne !");
     }
 
+
     public void renderGame(Graphics2D g) {
         g.setColor(Color.white);
         g.fillRect(0, 0, width, height);
+
+        ///currentRenderer.render(g, player);
+
     }
 }
