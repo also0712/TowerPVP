@@ -7,6 +7,7 @@ package Rendering;
 
 import Game.Common.GameConfig;
 import Game.Object.GameLogic;
+import Game.Object.PlayerTest;
 
 
 import javax.swing.*;
@@ -21,15 +22,11 @@ public class GameWindow extends JFrame implements Runnable {
     private Canvas canvas;
     private BufferStrategy strategy;
     private BufferedImage background;
-    private Graphics2D backgroundGraphics;
+    private Graphics2D gfx;
     private Graphics2D graphics;
     private GameRenderer currentRenderer;
-    private int width = 1280;
-    private int height = 768;
-    private int scale = 1;
 
-
-    private GameLogic logic ;
+    private GameLogic gameLogic;
 
     private GraphicsConfiguration config =
             GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -46,25 +43,27 @@ public class GameWindow extends JFrame implements Runnable {
 
     // Setup
     public GameWindow() {
+        gameLogic = new GameLogic();
         // définition du renderer (2D ou Isometric)
         currentRenderer = new Renderer2D();
+        currentRenderer.setGameLogic(gameLogic);// pour permettre au renderer de trouver les objet à afficher
 
         // JFrame initialisation
         setTitle("Towers PvP");
         addWindowListener(new FrameClose());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize(width * scale, height * scale);
+        setSize( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL);
         setResizable(false);
         setVisible(true);
 
 
         // Canvas
         canvas = new Canvas(config);
-        canvas.setSize(width * scale, height * scale);
+        canvas.setSize( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL);
         add(canvas, 0); // add canvas to frame
 
         // Background & Buffer
-        background = create(width, height, false);
+        background = create( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL, false);
         canvas.createBufferStrategy(2);
         do {
             strategy = canvas.getBufferStrategy();
@@ -74,7 +73,8 @@ public class GameWindow extends JFrame implements Runnable {
         Thread threadGame = new Thread(this);
         threadGame.start();
 
-        logic = new GameLogic();
+
+
 
     }
 
@@ -114,15 +114,15 @@ public class GameWindow extends JFrame implements Runnable {
     }
 
     public void run() {
-        backgroundGraphics = (Graphics2D) background.getGraphics();
-
+        gfx = (Graphics2D) background.getGraphics();
+        System.out.println("start game loop !");
         //on nomme la boucle mainLoop pour utiliser le nom dans le break
         mainLoop:
         while (isRunning) {
             long renderStart = System.nanoTime();
 
-            // Update game logic
-            logic.update();
+            // Update game gameLogic
+            gameLogic.update();
 
             // Update Graphics
             do {
@@ -130,15 +130,12 @@ public class GameWindow extends JFrame implements Runnable {
                 if (!isRunning) {
                     break mainLoop;
                 }
-                renderGame(backgroundGraphics); // this calls your draw method
+                currentRenderer.render(gfx);
+
                 // thingy
-                if (scale != 1) {
-                    bg.drawImage(background, 0, 0, width * scale, height
-                            * scale, 0, 0, width, height, null);
-                } else {
-                    bg.drawImage(background, 0, 0, null);
-                }
+                bg.drawImage(background, 0, 0, null);
                 bg.dispose();
+
             } while (!updateScreen());
 
             // Better do some FPS limiting here
@@ -155,17 +152,5 @@ public class GameWindow extends JFrame implements Runnable {
         dispose(); // dispose frame
     }
 
-    public void updateGame() {
-        // update game logic here
-        System.out.println("Le jeu tourne !");
-    }
 
-
-    public void renderGame(Graphics2D g) {
-        g.setColor(Color.white);
-        g.fillRect(0, 0, width, height);
-
-        ///currentRenderer.render(g, player);
-
-    }
 }
