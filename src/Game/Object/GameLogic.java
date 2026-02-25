@@ -2,16 +2,33 @@ package Game.Object;
 
 import Game.Common.GameConfig;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GameLogic {
 
-    PlayerTest playerTest;
+    private int nbPlayer = 100;
+    List<PlayerTest> playerTests = new ArrayList<PlayerTest>();
+
 
     public GameLogic(){
 
-        playerTest = new PlayerTest();
-        setRandomDestination(playerTest);
+        PlayerTest p;
+        for (int i = 0; i < nbPlayer; i++) {
+
+            p = new PlayerTest("warrior");
+            playerTests.add(p);
+            setRandomDestination(p);
+
+            p = new PlayerTest("scout");
+            playerTests.add(p);
+            setRandomDestination(p);
+
+            p = new PlayerTest("tank");
+            playerTests.add(p);
+            setRandomDestination(p);
+        }
     }
 
     public void setRandomDestination(PlayerTest p)
@@ -28,19 +45,28 @@ public class GameLogic {
 
     public void update() {
 
-        boolean isArrived = playerTest.forwardToDestination();
 
-        if( isArrived)
-        {
-            setRandomDestination(playerTest);
+        for (int i = 0; i < nbPlayer; i++) {
+            PlayerTest p = playerTests.get(i);
+            boolean isArrived = p.forwardToDestination();
+            if( isArrived)
+            {
+                setRandomDestination(p);
+            }
         }
     }
 
-    public PlayerTest getPlayerTest() {
-        return playerTest;
+    public PlayerTest getPlayerTest(int index) {
+        return playerTests.get(index);
     }
 
-    public void setPlayerTest(PlayerTest playerTest) {
-        this.playerTest = playerTest;
+
+
+    public int getNbPlayer() {
+        return nbPlayer;
+    }
+
+    public void setNbPlayer(int nbPlayer) {
+        this.nbPlayer = nbPlayer;
     }
 }

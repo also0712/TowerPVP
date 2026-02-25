@@ -7,7 +7,6 @@ package Rendering;
 
 import Game.Common.GameConfig;
 import Game.Object.GameLogic;
-import Game.Object.PlayerTest;
 
 
 import javax.swing.*;
@@ -21,7 +20,7 @@ public class GameWindow extends JFrame implements Runnable {
     private boolean isRunning = true;
     private Canvas canvas;
     private BufferStrategy strategy;
-    private BufferedImage background;
+    private BufferedImage bufferedFullImage;
     private Graphics2D gfx;
     private Graphics2D graphics;
     private GameRenderer currentRenderer;
@@ -63,7 +62,7 @@ public class GameWindow extends JFrame implements Runnable {
         add(canvas, 0); // add canvas to frame
 
         // Background & Buffer
-        background = create( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL, false);
+        bufferedFullImage = create( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL, false);
         canvas.createBufferStrategy(2);
         do {
             strategy = canvas.getBufferStrategy();
@@ -72,10 +71,6 @@ public class GameWindow extends JFrame implements Runnable {
         System.out.println("Le jeu est initialisé !");
         Thread threadGame = new Thread(this);
         threadGame.start();
-
-
-
-
     }
 
     private class FrameClose extends WindowAdapter {
@@ -114,8 +109,9 @@ public class GameWindow extends JFrame implements Runnable {
     }
 
     public void run() {
-        gfx = (Graphics2D) background.getGraphics();
-        System.out.println("start game loop !");
+        gfx = (Graphics2D) bufferedFullImage.getGraphics();
+        System.out.println("start game loop");
+        
         //on nomme la boucle mainLoop pour utiliser le nom dans le break
         mainLoop:
         while (isRunning) {
@@ -126,15 +122,15 @@ public class GameWindow extends JFrame implements Runnable {
 
             // Update Graphics
             do {
-                Graphics2D bg = getBuffer();
+                Graphics2D graphicBuffer = getBuffer();
                 if (!isRunning) {
                     break mainLoop;
                 }
-                currentRenderer.render(gfx);
-
-                // thingy
-                bg.drawImage(background, 0, 0, null);
-                bg.dispose();
+                currentRenderer.render(gfx); // c'est ici qu'on render nos objets
+                
+                //dessin de l'image
+                graphicBuffer.drawImage(bufferedFullImage, 0, 0, null);
+                graphicBuffer.dispose();
 
             } while (!updateScreen());
 

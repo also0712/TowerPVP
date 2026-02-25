@@ -1,13 +1,15 @@
 package Game.Object;
 
 import Game.Common.GameConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
 
 public class PlayerTest {
+    private String Name = "";
     private  double posX, posY; // Utiliser double pour plus de précision en 3D plus tard
     private double height, width; // dimensions en metre du joueur
-
     public double speed = 5.0; // 5m/s
-
     public double destX,destY;
 
     // Getters pour que le moteur de rendu puisse lire la position
@@ -18,23 +20,47 @@ public class PlayerTest {
         return posY;
     }
 
+    public PlayerTest(String name){
+        LoadInitConfig(name);
+    }
 
+    private void LoadInitConfig(String configName) {
+        try {
+            // Lecture du fichier JSON situé dans le dossier Configs
+            File configFile = new File("Configs/PlayerTest.json");
 
-    public PlayerTest(){
-        posX = 10.0;
-        posY = 10.0;
-        height = 3.0;
-        width = 3.0;
+            // Utilisation d'une bibliothèque comme Jackson (ObjectMapper)
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(configFile);
+            JsonNode playersNode = rootNode.path("players");
 
-        destX=500.0;
-        destY=500.0;
+            // Recherche du joueur par son nom
+            for (JsonNode node : playersNode) {
+                if (node.path("name").asText().equals(configName)) {
+                    this.posX = node.path("posX").asDouble();
+                    this.posY = node.path("posY").asDouble();
+                    this.width = node.path("width").asDouble();
+                    this.height = node.path("height").asDouble();
+                    this.speed = node.path("speed").asDouble();
+
+                    // On initialise la destination sur la position de départ par défaut
+                    this.destX = this.posX;
+                    this.destY = this.posY;
+
+                    System.out.println("Configuration chargée pour : " + configName);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la lecture du fichier de config JSON");
+            e.printStackTrace();
+        }
     }
 
     public void setDestination(double x, double y) {
         destX = x;
         destY = y;
     }
-
 
     public boolean forwardToDestination() {
         // à la vitesse de speed , quelle distance parcourt-on ?  produit en croix
@@ -53,13 +79,11 @@ public class PlayerTest {
             double ratio = disanceParcourue / triangleHypothenuse;
             posX += triangleSideX * ratio; // on applique le nouveau posX
             posY += triangleSideY * ratio; // on applique le nouveau Y
-            System.out.println(posX);
             return  false; // pas arrivé à destination
         }
         else {
             posX = destX;
             posY = destY;
-
             return true; // arrivé à destination
         }
     }

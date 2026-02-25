@@ -55,8 +55,12 @@ public class Renderer2D implements GameRenderer {
 
         // les coordonnées du jeu sont en metres, le terrain occupe 100m posX 56.25m  (16/9)
         // on va prendre en compte la résolution de l'écran pour convertir les metres en pixels
-        PlayerTest player = gameLogic.getPlayerTest();
-        renderPlayer(g, player);
+
+        for (int i = 0; i < gameLogic.getNbPlayer(); i++) {
+            PlayerTest player = gameLogic.getPlayerTest(i);
+            renderPlayer(g, player);
+        }
+
     }
 
     private void renderBackgoundImage(Graphics2D g) {
@@ -77,16 +81,16 @@ public class Renderer2D implements GameRenderer {
         BufferedImage sprite = getSprite("player");
 
         if (sprite != null) {
-            // 3. Conversion de la position (Metres -> Pixels)
-            int px = (int) (player.getPosX() * scaleX);
-            int py = (int) (player.getPosY() * scaleY);
-
-            // 4. Conversion de la taille (Metres -> Pixels)
-            // On utilise les propriétés de ton objet player
+            // 1. Calcul de la taille en pixels
             int pWidth = (int) (player.getWidth() * scaleX);
             int pHeight = (int) (player.getHeight() * scaleY);
 
-            System.out.println("ScaleX: " + scaleX + " | Width pixels: " + pWidth);
+            // 2. Conversion de la position avec décalage pour centrer
+            // On calcule le pixel du centre, puis on retire la moitié de la taille du sprite
+            int px = (int) (player.getPosX() * scaleX) - (pWidth / 2);// on recentre car le point donné n'est pas le point haut gauche mais le centre
+            int py = (int) (player.getPosY() * scaleY) - (pHeight / 2);
+
+            // 3. Rendu
             g.drawImage(sprite, px, py, pWidth, pHeight, null);
         }
     }
