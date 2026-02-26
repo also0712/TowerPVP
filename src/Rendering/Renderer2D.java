@@ -26,12 +26,8 @@ public class Renderer2D implements GameRenderer {
     }
 
     private void LoadSprites()    {
-
         loadSprite("background","ressources/background.png");
-        loadSprite("player","ressources/player.png"
-
-
-        );
+        loadSprite("player","ressources/player.png");
     }
 
     public static void loadSprite(String name, String filePath) {
@@ -51,49 +47,35 @@ public class Renderer2D implements GameRenderer {
 
     public void render(Graphics2D g) {
 
-        renderBackgoundImage(g);
-
-        // les coordonnées du jeu sont en metres, le terrain occupe 100m posX 56.25m  (16/9)
-        // on va prendre en compte la résolution de l'écran pour convertir les metres en pixels
-
-        for (int i = 0; i < gameLogic.getNbPlayer(); i++) {
-            PlayerTest player = gameLogic.getPlayerTest(i);
-            renderPlayer(g, player);
+        // On récupère une liste générique (ex: gameLogic.getEntities())
+        for (Renderable entity : gameLogic.getRenderables()) {
+            drawEntity(g, entity);
         }
-
     }
 
-    private void renderBackgoundImage(Graphics2D g) {
-
-        BufferedImage sprite = getSprite("background");
-
-        g.drawImage(sprite, 0, 0, GameConfig.WORLD_WIDTH_PIXEL, GameConfig.WORLD_HEIGHT_PIXEL, null);
-
-    }
-
-    public void renderPlayer(Graphics2D g, PlayerTest player)
+    public void drawEntity(Graphics2D g, Renderable entity)
     {
         // 2. Calcul des facteurs d'échelle (Pixels par Mètre)
         // Monde = 100m x 56.25m
         double scaleX = GameConfig.WORLD_WIDTH_PIXEL / GameConfig.WORLD_WIDTH_METERS;
         double scaleY = GameConfig.WORLD_HEIGHT_PIXEL / GameConfig.WORLD_HEIGHT_METERS;
 
-        BufferedImage sprite = getSprite("player");
+        BufferedImage sprite = getSprite(entity.getSpriteName());
 
         if (sprite != null) {
             // 1. Calcul de la taille en pixels
-            int pWidth = (int) (player.getWidth() * scaleX);
-            int pHeight = (int) (player.getHeight() * scaleY);
+            int pWidth = (int) (entity.getWidth() * scaleX);
+            int pHeight = (int) (entity.getHeight() * scaleY);
 
-            // 2. Conversion de la position avec décalage pour centrer
+            // 2. Conversion de la position avec décalage pour centrer l'image par rapport au poind donné
             // On calcule le pixel du centre, puis on retire la moitié de la taille du sprite
-            int px = (int) (player.getPosX() * scaleX) - (pWidth / 2);// on recentre car le point donné n'est pas le point haut gauche mais le centre
-            int py = (int) (player.getPosY() * scaleY) - (pHeight / 2);
+            double HalfX = entity.getWidth()/2.0;
+            double HalfY = entity.getHeight() /2.0;
+            int px = (int) ((entity.getPosX()-HalfX) * scaleX);// on recentre car le point donné n'est pas le point haut gauche mais le centre
+            int py = (int) ((entity.getPosY()-HalfY) * scaleY);
 
-            // 3. Rendu
+            // 3. Rendu dans le buffer
             g.drawImage(sprite, px, py, pWidth, pHeight, null);
         }
     }
-
-
 }

@@ -51,15 +51,19 @@ public class GameWindow extends JFrame implements Runnable {
         setTitle("Towers PvP");
         addWindowListener(new FrameClose());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setSize( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL);
-        setResizable(false);
-        setVisible(true);
+       // setSize( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL);
+
+
 
 
         // Canvas
         canvas = new Canvas(config);
         canvas.setSize( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL);
         add(canvas, 0); // add canvas to frame
+
+        pack();
+        setResizable(false);
+        setVisible(true);
 
         // Background & Buffer
         bufferedFullImage = create( GameConfig.WORLD_WIDTH_PIXEL,GameConfig.WORLD_HEIGHT_PIXEL, false);

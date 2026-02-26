@@ -4,8 +4,9 @@ import Game.Common.GameConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
+import Rendering.Renderable;
 
-public class PlayerTest {
+public class PlayerTest implements Renderable {
     private String Name = "";
     private  double posX, posY; // Utiliser double pour plus de précision en 3D plus tard
     private double height, width; // dimensions en metre du joueur
@@ -60,6 +61,8 @@ public class PlayerTest {
     public void setDestination(double x, double y) {
         destX = x;
         destY = y;
+
+        //System.out.println("x="+x + "  y=" + y);
     }
 
     public boolean forwardToDestination() {
@@ -68,11 +71,20 @@ public class PlayerTest {
 
         double disanceParcourue = speed * GameConfig.DELAY_BETWEEN_FRAMES / 1000;
 
+
+
         // Je suis a un point x1,y1 et je vais vers un point x2,y2.
         // On peut représenter un triangle rectange entre les deux point où la disance parcourue est l'hypotenuse
         double triangleSideX = destX - posX;
         double triangleSideY = destY - posY;
-        double triangleHypothenuse = Math.sqrt( (triangleSideX * triangleSideX) + (triangleSideY * triangleSideY));
+        double triangleHypothenuse = Math.hypot(triangleSideX, triangleSideY);
+
+        // Sécurité : si on est déjà sur place ou presque (évite division par zéro)
+        if (triangleHypothenuse < 0.001) {
+            posX = destX;
+            posY = destY;
+            return true;
+        }
 
         if( disanceParcourue<triangleHypothenuse ) { // on n'a pas dépassé notre cible
             // à cette vitesse on ne peut parcourir qu'une fraction de l'hypothénuse
@@ -91,6 +103,11 @@ public class PlayerTest {
     // getter setters
     public double getHeight() {
         return height;
+    }
+
+    @Override
+    public String getSpriteName() {
+        return "player";
     }
 
     public void setHeight(double height) {
